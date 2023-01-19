@@ -1,8 +1,10 @@
 @RestResource(urlMapping='/Contacts/*')
 global with sharing class ContactManager {
-    
+
+    // Méthode pour créer un contact
     @HttpPost
     global static ID createContact(String firstName, String lastName, String email) {
+        // Vérifie si un contact existe déjà avec cette adresse email
         List<Contact> existingContacts = [SELECT Id FROM Contact WHERE Email =:email];
         if (!existingContacts.isEmpty()) {
             Contact existingContact = existingContacts[0];
@@ -20,9 +22,11 @@ global with sharing class ContactManager {
         }
     }
 
+    // Méthode pour désactiver un contact
     @HttpDelete
     global static void desactivateContact() {
         RestRequest request = RestContext.request;
+        // Récupère l'ID du contact à partir de l'URL
         String contactId = request.requestURI.substring(
             request.requestURI.lastIndexOf('/')+1);
         Contact thisContact = [SELECT Id FROM Contact WHERE Id = :contactId];
@@ -35,20 +39,18 @@ global with sharing class ContactManager {
         }
     }
 
+    // Méthode pour mettre à jour un contact
     @HttpPatch
-    global static ID updateContact(Contact updatedContact) {
-        Contact thisContact = [SELECT Id FROM Contact WHERE Id = :updatedContact.Id];
-        if (thisContact == null) {
-            RestContext.response.responseBody = Blob.valueOf('Contact not found.');
+    global static void updateContact(Id accountId, String firstName, String lastName, String email) {
+        Contact contact = [SELECT Id FROM Contact WHERE Id = :accountId];
+        if (contact == null) {
             RestContext.response.statusCode = 404;
-            return null;
-        } else {
-            thisContact.FirstName = updatedContact.FirstName;
-            thisContact.LastName = updatedContact.LastName;
-            thisContact.Email = updatedContact.Email;
-            // Ajout d'autres champs au besoin
-            update thisContact;
-            return thisContact.Id;
+            RestContext.response.responseBody = Blob.valueOf('Contact not found with ID: ' + accountId);
+            return;
         }
-    }
+        contact.firstName = firstName;
+        contact.lastName = lastName;
+        contact.email = email;
+        update contact;
+    }    
 }

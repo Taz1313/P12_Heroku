@@ -1,22 +1,18 @@
 @isTest
 private class ContactManagerTest {
-    
+
+    // Crée un contact de test avec la méthode createContact()
     @testSetup
     static void createTestContact() {
         ContactManager.createContact('Legarant', 'Contact', 'test@test.com');
     }
 
+    // Teste de la création d'un contact avec une adresse email existante
     @isTest
     static void createContactWithExistingEmailTest() {
         Contact testContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE Email = 'test@test.com'];
 
-        System.assertEquals(testContact.FirstName, 'Legarant');
-        System.assertEquals(testContact.LastName, 'Contact');
-
-        testContact.FirstName = 'Nouveau Test';
-        testContact.LastName = 'OC';
-
-        Id resultId = ContactManager.createContact(testContact.FirstName, testContact.LastName, testContact.Email);
+        ContactManager.createContact('Nouveau Test', 'OC', testContact.Email);
 
         Contact updatedContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE Email =:testContact.Email];
 
@@ -25,27 +21,12 @@ private class ContactManagerTest {
         System.assertEquals(updatedContact.Email, 'test@test.com');
     }
 
-    @isTest
-    static void updateContactTest(){
-        Contact testContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE Email = 'test@test.com'];
-
-        testContact.FirstName = 'Test';
-        testContact.LastName = 'OC2023';
-        testContact.Email = 'OC@OC.COM';
-
-        Id resultId = ContactManager.updateContact(testContact);
-
-        Contact updatedContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE Email =:testContact.Email];
-
-        System.assertEquals(updatedContact.FirstName, 'Test');
-        System.assertEquals(updatedContact.LastName, 'OC2023');
-        System.assertEquals(updatedContact.Email.toupperCase(), 'OC@OC.COM');
-    }
-
+    // Teste de la désactivation d'un contact
     @isTest
     static void desactivateContactTest() {
         Contact testContact = [SELECT Id FROM Contact WHERE Email = 'test@test.com'];
         RestContext.request = new RestRequest();
+        // Simule une requête DELETE pour la méthode de désactivation
         RestContext.request.requestURI = '/services/apexrest/Contacts/' + testContact.Id;
         RestContext.request.httpMethod = 'DELETE';
         RestContext.response = new RestResponse();
@@ -54,5 +35,19 @@ private class ContactManagerTest {
 
         testContact = [SELECT Id, IsActive__c FROM Contact WHERE Id = :testContact.Id];
         System.assertEquals(false, testContact.IsActive__c);
-    }   
+    }
+
+    // Teste de la mise à jour d'un contact
+    @isTest
+    static void updateContactTest() {
+        Contact testContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE Email = 'test@test.com'];
+
+        ContactManager.updateContact(testContact.Id, 'NewTest', 'TestNew', 'newtest@newtest.com');
+
+        Contact updatedContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE ID =:testContact.Id];
+
+        System.assertEquals(updatedContact.FirstName, 'NewTest');
+        System.assertEquals(updatedContact.LastName, 'TestNew');
+        System.assertEquals(updatedContact.Email, 'newtest@newtest.com');
+    }
 }

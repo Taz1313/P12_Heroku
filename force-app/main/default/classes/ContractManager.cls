@@ -1,11 +1,11 @@
 @RestResource(urlMapping='/Contracts/*')
 global with sharing class ContractManager {
-
+    
+    // Méthode pour créer un contrat
     @HttpPost
-    global static ID createContract(Id accountId, String name, Date startDate, Integer contractTerm, String status) {
+    global static ID createContract(Id accountId, Date startDate, Integer contractTerm, String status) {
         Contract newContract = new Contract(
             AccountId = accountId,
-            Name = name,
             StartDate = startDate,
             ContractTerm = contractTerm,
             Status = status
@@ -14,15 +14,15 @@ global with sharing class ContractManager {
         return newContract.Id;
     }
 
+    // Méthode pour mettre à jour un contrat
     @HttpPatch
-    global static void updateContract(Id accountId, String name, Date startDate, Integer contractTerm, String status) {
-        Contract contract = [SELECT Id FROM Contract WHERE Id = :accountId];
+    global static void updateContract(Id contractId, Date startDate, Integer contractTerm, String status) {
+        Contract contract = [SELECT Id FROM Contract WHERE Id = :contractId];
         if (contract == null) {
             RestContext.response.statusCode = 404;
-            RestContext.response.responseBody = Blob.valueOf('Contract not found with ID: ' + accountId);
+            RestContext.response.responseBody = Blob.valueOf('Contract not found with ID: ' + contractId);
             return;
         }
-        contract.Name = name;
         contract.StartDate = startDate;
         contract.ContractTerm = contractTerm;
         contract.Status = status;
