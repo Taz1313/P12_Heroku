@@ -24,33 +24,25 @@ global with sharing class ContactManager {
 
     // Méthode pour désactiver un contact
     @HttpDelete
-    global static void desactivateContact() {
+    global static ID desactivateContact() {
         RestRequest request = RestContext.request;
         // Récupère l'ID du contact à partir de l'URL
         String contactId = request.requestURI.substring(
             request.requestURI.lastIndexOf('/')+1);
         Contact thisContact = [SELECT Id FROM Contact WHERE Id = :contactId];
-        if (thisContact == null) {
-            RestContext.response.responseBody = Blob.valueOf('Contact not found.');
-            RestContext.response.statusCode = 404;
-        } else {
-            thisContact.IsActive__c = false;
-            update thisContact;
-        }
+        thisContact.IsActive__c = false;
+        update thisContact;
+        return thisContact.Id;        
     }
 
     // Méthode pour mettre à jour un contact
     @HttpPatch
-    global static void updateContact(Id accountId, String firstName, String lastName, String email) {
+    global static ID updateContact(Id accountId, String firstName, String lastName, String email) {
         Contact contact = [SELECT Id FROM Contact WHERE Id = :accountId];
-        if (contact == null) {
-            RestContext.response.statusCode = 404;
-            RestContext.response.responseBody = Blob.valueOf('Contact not found with ID: ' + accountId);
-            return;
-        }
         contact.firstName = firstName;
         contact.lastName = lastName;
         contact.email = email;
         update contact;
+        return contact.Id;
     }    
 }

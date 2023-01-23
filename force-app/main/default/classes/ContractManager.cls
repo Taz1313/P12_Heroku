@@ -16,16 +16,12 @@ global with sharing class ContractManager {
 
     // Méthode pour mettre à jour un contrat
     @HttpPatch
-    global static void updateContract(Id contractId, Date startDate, Integer contractTerm, String status) {
+    global static ID updateContract(Id contractId, Date startDate, Integer contractTerm, String status) {
         Contract contract = [SELECT Id FROM Contract WHERE Id = :contractId];
-        if (contract == null) {
-            RestContext.response.statusCode = 404;
-            RestContext.response.responseBody = Blob.valueOf('Contract not found with ID: ' + contractId);
-            return;
-        }
         contract.StartDate = startDate;
         contract.ContractTerm = contractTerm;
         contract.Status = status;
         update contract;
+        return contract.Id;
     }
 }
