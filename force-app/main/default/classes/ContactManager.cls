@@ -37,12 +37,16 @@ global with sharing class ContactManager {
 
     // Méthode pour mettre à jour un contact
     @HttpPatch
-    global static ID updateContact(Id accountId, String firstName, String lastName, String email) {
-        Contact contact = [SELECT Id FROM Contact WHERE Id = :accountId];
-        contact.firstName = firstName;
-        contact.lastName = lastName;
-        contact.email = email;
-        update contact;
-        return contact.Id;
+    global static ID updateContact() {
+        RestRequest request = RestContext.request;
+        String contactId = request.requestURI.substring(
+            request.requestURI.lastIndexOf('/')+1);
+        Contact thisContact = [SELECT Id FROM Contact WHERE Id = :contactId];
+        Map<String, Object> params = (Map<String, Object>)JSON.deserializeUntyped(request.requestbody.tostring());
+        for(String fieldName : params.keySet()) {
+            thisContact.put(fieldName, params.get(fieldName));
+        }
+        update thisContact;
+        return thisContact.Id;
     }    
 }

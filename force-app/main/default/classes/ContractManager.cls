@@ -16,12 +16,22 @@ global with sharing class ContractManager {
 
     // Méthode pour mettre à jour un contrat
     @HttpPatch
-    global static ID updateContract(Id contractId, Date startDate, Integer contractTerm, String status) {
-        Contract contract = [SELECT Id FROM Contract WHERE Id = :contractId];
-        contract.StartDate = startDate;
-        contract.ContractTerm = contractTerm;
-        contract.Status = status;
-        update contract;
-        return contract.Id;
-    }
+    global static ID updateContract() {
+        RestRequest request = RestContext.request;
+        String contractId = request.requestURI.substring(
+            request.requestURI.lastIndexOf('/')+1);
+        Contract thisContract = [SELECT Id FROM Contract WHERE Id = :contractId];
+        Map<String, Object> params = (Map<String, Object>)JSON.deserializeUntyped(request.requestbody.tostring());
+        for(String fieldName : params.keySet()) {
+            if(fieldName == 'startDate') {
+                thisContract.put(fieldName, Date.valueOf((String)params.get(fieldName)));
+            } else if(fieldName == 'contractTerm') {
+                thisContract.put(fieldName, Integer.valueOf((String)params.get(fieldName)));
+            } else {
+                thisContract.put(fieldName, params.get(fieldName));
+            }            
+        }
+        update thisContract;
+        return thisContract.Id;
+    }    
 }

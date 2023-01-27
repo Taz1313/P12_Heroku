@@ -40,12 +40,16 @@ private class ContactManagerTest {
     // Teste de la mise à jour d'un contact
     @isTest
     static void updateContactTest() {
-        Contact testContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE Email = 'test@test.com'];
+        Contact testContact = [SELECT Id FROM Contact WHERE Email = 'test@test.com'];
+        RestContext.request = new RestRequest();
+        // Simule une requête PATCH pour la méthode de mise à jour
+        RestContext.request.requestURI = '/services/apexrest/Contacts/' + testContact.Id;
+        RestContext.request.httpMethod = 'PATCH';
+        RestContext.request.requestbody = Blob.valueOf('{"FirstName":"NewTest","LastName":"TestNew","Email":"newtest@newtest.com"}');
+        RestContext.response = new RestResponse();
 
-        ContactManager.updateContact(testContact.Id, 'NewTest', 'TestNew', 'newtest@newtest.com');
-
-        Contact updatedContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE ID =:testContact.Id];
-
+        ContactManager.updateContact();
+        Contact updatedContact = [SELECT Id, FirstName, LastName, Email FROM Contact WHERE Id = :testContact.Id];
         System.assertEquals(updatedContact.FirstName, 'NewTest');
         System.assertEquals(updatedContact.LastName, 'TestNew');
         System.assertEquals(updatedContact.Email, 'newtest@newtest.com');
