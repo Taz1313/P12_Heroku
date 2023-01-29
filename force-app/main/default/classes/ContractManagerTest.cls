@@ -1,9 +1,25 @@
 @isTest
 private class ContractManagerTest {
     
-    // Teste de la création et mise à jour d'un contrat
+    // Teste de la création d'un contrat
     @isTest
-    static void createAndUpdateContractTest() {
+    static void createContractTest() {
+        Account acc = new Account();
+        acc.Name ='Test';
+        insert acc;  
+        Id accountId = acc.Id;     
+        Id contractId = ContractManager.createContract(accountId, Date.today(), 12, 'Draft');       
+
+        Contract testContract = [SELECT StartDate, ContractTerm, Status FROM Contract WHERE Id =:contractId];
+
+        System.assertEquals(testContract.StartDate, Date.today());
+        System.assertEquals(testContract.ContractTerm, 12);
+        System.assertEquals(testContract.Status, 'Draft');
+    }
+
+    // Teste de la mise à jour d'un contrat
+    @isTest
+    static void updateContractTest() {
         Account acc = new Account();
         acc.Name ='Test';
         insert acc;  
