@@ -21,11 +21,19 @@ private class ContractManagerTest {
     @isTest
     static void updateContractTest() {
         Account acc = new Account();
-        acc.Name ='Test';
+        acc.Name = 'Test';
         insert acc;  
         Id accountId = acc.Id;     
-        Id contractId = ContractManager.createContract(accountId, Date.today(), 12, 'Draft');       
-
+        
+        Contract newContract = new Contract(
+            AccountId = accountId,
+            Status = 'Draft',
+            StartDate = Date.today(),
+            ContractTerm = 12);
+        insert newContract;
+        
+        Id contractId = newContract.Id;
+        
         Contract testContract = [SELECT Id FROM Contract WHERE Id =:contractId];
 
         RestContext.request = new RestRequest();
